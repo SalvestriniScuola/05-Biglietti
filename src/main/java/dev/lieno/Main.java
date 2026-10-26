@@ -4,14 +4,16 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Main {
 
     private static ArrayList<String> users = new ArrayList<>();
-    private static HashMap<String, Integer> tickets = new HashMap<>();
+    private static Map<String, Integer> tickets = Collections.synchronizedMap(new HashMap<>());
 
     private static final ExecutorService threadPool = Executors.newFixedThreadPool(10); 
 
@@ -34,7 +36,7 @@ public class Main {
             Socket s = ss.accept();
             System.out.println("New client connected" + s.getInetAddress().getHostAddress());   
                                          
-            ClientHandler clientSock = new ClientHandler(s);
+            ClientHandler clientSock = new ClientHandler(s, tickets);
 
             threadPool.execute(clientSock);
         }        
@@ -45,9 +47,5 @@ public class Main {
             return false;
         
         return users.add(username);
-    }
-
-    public static String getAvailability() {
-        return "AVAIL Gold:" + tickets.get("gold") + " Pit:" + tickets.get("pit") + " Parterre:" + tickets.get("parterre");
     }
 }

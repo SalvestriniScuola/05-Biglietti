@@ -5,14 +5,17 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.Map;
 
 public class ClientHandler implements Runnable{
 
     private Socket s;
+    private Map<String,Integer> tickets;
 
-    public ClientHandler(Socket socket)
+    public ClientHandler(Socket socket, Map<String,Integer> tickets)
         {
             this.s = socket;
+            this.tickets = tickets;
         }
 
     @Override
@@ -48,14 +51,54 @@ public class ClientHandler implements Runnable{
                 } else {
                     switch (cmd.split(" ")[0]) {
                         case "n":
-                            out.println(Main.getAvailability());
+                            out.println("AVAIL Gold:" + tickets.get("gold") + " Pit:" + tickets.get("pit") + " Parterre:" + tickets.get("parterre"));
                             break;
                         
                         case "buy":
-                                String tmp = in.readLine().toLowerCase();
+                                String[] token = in.readLine().toLowerCase().split(" ");
+                                
+                                
+                                Integer ammount = Integer.parseInt(token[1]);
+                                
+
+                                switch (token[0]) {
+                                    case "pit":
+                                        if(tickets.get("pit") < ammount)
+                                            err(out, "KO");
+                                        else {
+                                            tickets.put("pit", tickets.get("pit") - ammount);
+                                            out.println("OK");
+                                        }
+                                        break;
+                                
+                                    case "gold":
+
+                                        if(tickets.get("gold") < ammount)
+                                            err(out, "KO");
+                                        else {
+                                            tickets.put("gold", tickets.get("gold") - ammount);
+                                            out.println("OK");
+                                        }
+                                        break;
+
+                                    case "parterre":
+                                        if(tickets.get("parterre") < ammount)
+                                            err(out, "KO");
+                                        else {
+                                            tickets.put("parterre", tickets.get("parterre") - ammount);
+                                            out.println("OK");
+                                        }
+
+                                        break;
+
+                                    default:
+                                        err(out, "KO");
+                                        break;
+                                }
 
                             break;
                         default:
+                            err(out, "command not found!");
                             break;
                     }
                 }
